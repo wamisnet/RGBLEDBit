@@ -15,8 +15,8 @@ int getSub(int max) {
 }
 void setup()
 {
-//  Serial.begin(115200);
-//  Serial.println("RGBbits");
+  //  Serial.begin(115200);
+  //  Serial.println("RGBbits");
   RGBLED.begin() ;                   // RGBLEDのライブラリを初期化する
   RGBLED.setBrightness(50) ;         // 明るさの指定(0-255)を行う
   RGBLED.setPixelColor(0, 0, 150, 0) ; // 適度に明るい緑の色。(R=0,G=150,B=0)
@@ -29,26 +29,26 @@ void ColorSelect() {
   int sub = getSub(50);
   if (sub < 10)sub = 20;
   RGBLED.setBrightness(sub);
-  byte r=mas,g=mas>>1,b=mas>>2;
-  
+  byte r = mas, g = mas >> 1, b = mas >> 2;
+
   for (int i = 0; i < RGBlednum; i++) {
     RGBLED.setPixelColor(i, r, g, b) ;
   }
   RGBLED.show();
 }
 void Equalizer() {
-//  Serial.println("Equalizer");
+  //  Serial.println("Equalizer");
   //一定以上になると赤色が光る
-  int mas = getMaster(RGBlednum);
+  int mas = getMaster(RGBlednum - 1);
   int sub = getSub(50);
   if (sub < 10)sub = 20;
   RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
-    if(i<mas){
-    RGBLED.setPixelColor(i, 0, 150, 50) ;
-    if ((RGBlednum - RGBlednum / 5) <= i)RGBLED.setPixelColor(i, 150, 50, 0) ;
-    }else{
-       RGBLED.setPixelColor(i, 0, 0, 0) ;
+    if (i < mas) {
+      RGBLED.setPixelColor(i, 0, 150, 50) ;
+      if ((RGBlednum - RGBlednum / 5) <= i)RGBLED.setPixelColor(i, 150, 50, 0) ;
+    } else {
+      RGBLED.setPixelColor(i, 0, 0, 0) ;
     }
   }
   RGBLED.show();
@@ -73,10 +73,10 @@ void ColorWave() {
   if (colorWavePos[0] > 36) {
     colorWavePos[0] = 0;
   }
- // Serial.println("ColorWave");
+  // Serial.println("ColorWave");
   for (int i = 0; i < 4; i++) {
- //   Serial.print(colorWavePos[i]);
- //   Serial.print(":");
+    //   Serial.print(colorWavePos[i]);
+    //   Serial.print(":");
   }
 }
 void Rainbow() {
@@ -95,7 +95,7 @@ void Rainbow() {
 }
 void RainbowCycle() {
   //色がどんどん変わっていく
- // Serial.println("RainbowCycle");
+  // Serial.println("RainbowCycle");
   int mas = getMaster(100);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
@@ -105,60 +105,74 @@ void RainbowCycle() {
     RGBLED.setPixelColor(i, colorWavePos[1] * 10, colorWavePos[2] * 10, colorWavePos[3] * 10);
   }
   RGBLED.show();
-  delay(50+mas);
+  delay(50 + mas);
 }
 
 void Nightrider() {
   //光る場所がアナログ値によって変わる
   //Serial.println("Nightrider");
-  int mas = getMaster(RGBlednum);
-  int sub = getSub(255);
+  int mas = getMaster(RGBlednum - 1);
+  int sub = getSub(1023);
   if (sub < 10)sub = 50;
+  byte r = sub, g = sub >> 1, b = sub >> 2;
   for (int i = 0; i < RGBlednum; i++) {
     RGBLED.setPixelColor(i, 0, 0, 0);
   }
   RGBLED.setBrightness(50);
-  RGBLED.setPixelColor(mas, sub, sub, sub);
+  RGBLED.setPixelColor(mas, r, g, b);
 
   RGBLED.show();
   delay(10);
 }
 int ligCount = 0;
+bool HorL = LOW;
 void Counter() {
   //Serial.println("Counter");
   //カウントアップしていく
   int mas = getMaster(100);
-  int sub = getSub(250);
-  if (sub < 10)sub = 50;
+  int sub = getSub(1023);
+  if (sub < 50)sub = 260;
+  byte r = sub, g = sub >> 1, b = sub >> 2;
   if (mas > 50) {
-    for (int i = 0; i < RGBlednum; i++) {
-      RGBLED.setPixelColor(i, 0, 0, 0) ;
+    if (HorL == LOW) {
+      HorL = HIGH;
+      for (int i = 0; i < RGBlednum; i++) {
+        RGBLED.setPixelColor(i, 0, 0, 0) ;
+      }
+      if (ligCount >= RGBlednum) {
+        ligCount = 0;
+      }
+      RGBLED.setBrightness(50);
+      RGBLED.setPixelColor(ligCount, r, g, b);
+      ligCount++;
     }
-    if (ligCount > RGBlednum) {
-      ligCount = 0;
-    }
-    RGBLED.setBrightness(50);
-    RGBLED.setPixelColor(ligCount, sub, sub, sub);
-    ligCount++;
+  } else {
+    HorL = LOW;
   }
   RGBLED.show();
 }
 void CounterExtended() {
- // Serial.println("CounterExtended");
+  // Serial.println("CounterExtended");
   //カウントアップしていく+消えない
   int mas = getMaster(100);
-  int sub = getSub(250);
-  if (sub < 10)sub = 50;
+  int sub = getSub(1023);
+  if (sub < 50)sub = 260;
+  byte r = sub, g = sub >> 1, b = sub >> 2;
   if (mas > 50) {
-    if (ligCount > RGBlednum) {
-      for (int i = 0; i < RGBlednum; i++) {
-        RGBLED.setPixelColor(i, 0, 0, 0) ;
+    if (HorL == LOW) {
+      HorL = HIGH;
+      if (ligCount >= RGBlednum) {
+        for (int i = 0; i < RGBlednum; i++) {
+          RGBLED.setPixelColor(i, 0, 0, 0) ;
+        }
+        ligCount = 0;
       }
-      ligCount = 0;
+      RGBLED.setBrightness(50);
+      RGBLED.setPixelColor(ligCount, r, g, b);
+      ligCount++;
     }
-    RGBLED.setBrightness(50);
-    RGBLED.setPixelColor(ligCount, sub, sub, sub);
-    ligCount++;
+  } else {
+    HorL = LOW;
   }
   RGBLED.show();
 }
@@ -166,7 +180,7 @@ void CounterExtended() {
 bool onoff = true;
 void Theater() {
   //色がどんどん変わっていく
-//  Serial.println("Theater");
+  //  Serial.println("Theater");
   int mas = getMaster(100);
   int sub = getSub(255);
   if (sub < 10)sub = 50;
@@ -187,10 +201,10 @@ void Theater() {
 
 void WhiteColor() {
   //白色点灯
-//  Serial.println("WhiteColor");
+  //  Serial.println("WhiteColor");
   int mas = getMaster(100);
   int sub = getSub(RGBlednum);
-  if(sub<1)sub=RGBlednum;
+  if (sub < 1)sub = RGBlednum;
   RGBLED.setBrightness(mas);
   for (int i = 0; i < sub; i++) {
     RGBLED.setPixelColor(i, 255, 255, 255) ;
@@ -201,39 +215,39 @@ void WhiteColor() {
 int modechange = 0;
 void loop()
 {
-   Rainbow();
- /* switch (modechange/10) {
-    case 0:
-      ColorSelect();
-      break;
-    case 1:
-      Rainbow();
-      break;
-    case 2:
-      RainbowCycle();
-      break;
-    case 3:
-      Nightrider();
-      break;
-    case 4:
-      Counter();
-      break;
-    case 5:
-      CounterExtended();
-      break;
-    case 6:
-      Equalizer();
-      break;
-    case 7:
-      Theater();
-      break;
-    case 8:
-      Theater();
-      break;
-  }
-modechange++;
-if(modechange/10>8){
-  modechange=0;
-}*/
+  CounterExtended();
+  /* switch (modechange/10) {
+     case 0:
+       ColorSelect();
+       break;
+     case 1:
+       Rainbow();
+       break;
+     case 2:
+       RainbowCycle();
+       break;
+     case 3:
+       Nightrider();
+       break;
+     case 4:
+       Counter();
+       break;
+     case 5:
+       CounterExtended();
+       break;
+     case 6:
+       Equalizer();
+       break;
+     case 7:
+       Theater();
+       break;
+     case 8:
+       Theater();
+       break;
+    }
+    modechange++;
+    if(modechange/10>8){
+    modechange=0;
+    }*/
   delay(10);
 }
