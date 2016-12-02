@@ -3,7 +3,9 @@
 // RGBLEDに出力するピン番号
 #define RGBLED_OUTPIN    1
 
-int RGBlednum = 30;
+int RGBlednum = 60;
+
+
 Adafruit_NeoPixel RGBLED = Adafruit_NeoPixel(RGBlednum, RGBLED_OUTPIN, NEO_GRB);
 int getMaster(int max) {
   int val = analogRead(A3) / 10;
@@ -13,14 +15,13 @@ int getSub(int max) {
   int val = analogRead(A2) / 10;
   return map(val, 0, 102, 0, max);
 }
+
 void setup()
 {
   //  Serial.begin(115200);
   //  Serial.println("RGBbits");
   RGBLED.begin() ;                   // RGBLEDのライブラリを初期化する
-  RGBLED.setBrightness(50) ;         // 明るさの指定(0-255)を行う
-  RGBLED.setPixelColor(0, 0, 150, 0) ; // 適度に明るい緑の色。(R=0,G=150,B=0)
-  RGBLED.show() ;                    // LEDにデータを送り出す
+  pinMode(0, INPUT_PULLUP);
 }
 void ColorSelect() {
   //色がどんどん変わっていく
@@ -35,11 +36,12 @@ void ColorSelect() {
     RGBLED.setPixelColor(i, r, g, b) ;
   }
   RGBLED.show();
+  delay(50);
 }
 void Equalizer() {
   //  Serial.println("Equalizer");
   //一定以上になると赤色が光る
-  int mas = getMaster(RGBlednum - 1);
+  int mas = getMaster(RGBlednum);
   int sub = getSub(50);
   if (sub < 10)sub = 20;
   RGBLED.setBrightness(sub);
@@ -52,6 +54,7 @@ void Equalizer() {
     }
   }
   RGBLED.show();
+  delay(50);
 }
 int colorWavePos[4] = {0, 0, 0, 12};
 void ColorWave() {
@@ -113,12 +116,12 @@ void Nightrider() {
   //Serial.println("Nightrider");
   int mas = getMaster(RGBlednum - 1);
   int sub = getSub(1023);
-  if (sub < 10)sub = 50;
+  if (sub < 10)sub = 1023;
   byte r = sub, g = sub >> 1, b = sub >> 2;
   for (int i = 0; i < RGBlednum; i++) {
     RGBLED.setPixelColor(i, 0, 0, 0);
   }
-  RGBLED.setBrightness(50);
+  RGBLED.setBrightness(30);
   RGBLED.setPixelColor(mas, r, g, b);
 
   RGBLED.show();
@@ -131,7 +134,7 @@ void Counter() {
   //カウントアップしていく
   int mas = getMaster(100);
   int sub = getSub(1023);
-  if (sub < 50)sub = 260;
+  if (sub < 50)sub = 1023;
   byte r = sub, g = sub >> 1, b = sub >> 2;
   if (mas > 50) {
     if (HorL == LOW) {
@@ -142,7 +145,7 @@ void Counter() {
       if (ligCount >= RGBlednum) {
         ligCount = 0;
       }
-      RGBLED.setBrightness(50);
+      RGBLED.setBrightness(30);
       RGBLED.setPixelColor(ligCount, r, g, b);
       ligCount++;
     }
@@ -150,13 +153,14 @@ void Counter() {
     HorL = LOW;
   }
   RGBLED.show();
+  delay(50);
 }
 void CounterExtended() {
   // Serial.println("CounterExtended");
   //カウントアップしていく+消えない
   int mas = getMaster(100);
   int sub = getSub(1023);
-  if (sub < 50)sub = 260;
+  if (sub < 50)sub =1023;
   byte r = sub, g = sub >> 1, b = sub >> 2;
   if (mas > 50) {
     if (HorL == LOW) {
@@ -167,7 +171,7 @@ void CounterExtended() {
         }
         ligCount = 0;
       }
-      RGBLED.setBrightness(50);
+      RGBLED.setBrightness(30);
       RGBLED.setPixelColor(ligCount, r, g, b);
       ligCount++;
     }
@@ -175,6 +179,7 @@ void CounterExtended() {
     HorL = LOW;
   }
   RGBLED.show();
+  delay(50);
 }
 
 bool onoff = true;
@@ -182,15 +187,16 @@ void Theater() {
   //色がどんどん変わっていく
   //  Serial.println("Theater");
   int mas = getMaster(100);
-  int sub = getSub(255);
-  if (sub < 10)sub = 50;
-  RGBLED.setBrightness(50);
-  for (int i = 0; i < RGBlednum / 2; i++) {
+  int sub = getSub(1023);
+  if (sub < 50)sub = 1023;
+  byte r = sub, g = sub >> 1, b = sub >> 2;
+  RGBLED.setBrightness(30);
+  for (int i = 0; i < RGBlednum; i += 2) {
     if (onoff) {
       RGBLED.setPixelColor(i, 0, 0, 0) ;
-      RGBLED.setPixelColor(i + 1, sub, sub, sub) ;
+      RGBLED.setPixelColor(i + 1, r, g, b) ;
     } else {
-      RGBLED.setPixelColor(i, sub, sub, sub) ;
+      RGBLED.setPixelColor(i, r, g, b) ;
       RGBLED.setPixelColor(i + 1, 0, 0, 0) ;
     }
   }
@@ -202,52 +208,64 @@ void Theater() {
 void WhiteColor() {
   //白色点灯
   //  Serial.println("WhiteColor");
-  int mas = getMaster(100);
+  int mas = getMaster(50);
   int sub = getSub(RGBlednum);
   if (sub < 1)sub = RGBlednum;
   RGBLED.setBrightness(mas);
-  for (int i = 0; i < sub; i++) {
-    RGBLED.setPixelColor(i, 255, 255, 255) ;
+  for (int i = 0; i < RGBlednum; i++) {
+    if (i < sub) {
+      RGBLED.setPixelColor(i, 255, 255, 255) ;
+    } else {
+      RGBLED.setPixelColor(i, 0, 0, 0) ;
+    }
   }
   RGBLED.show();
+  delay(50);
 }
 
 int modechange = 0;
+bool pushSW() {
+  if (digitalRead(0) == LOW) {
+    delay(500);
+    return true;
+  }
+  return false;
+}
 void loop()
 {
-  CounterExtended();
-  /* switch (modechange/10) {
-     case 0:
-       ColorSelect();
-       break;
-     case 1:
-       Rainbow();
-       break;
-     case 2:
-       RainbowCycle();
-       break;
-     case 3:
-       Nightrider();
-       break;
-     case 4:
-       Counter();
-       break;
-     case 5:
-       CounterExtended();
-       break;
-     case 6:
-       Equalizer();
-       break;
-     case 7:
-       Theater();
-       break;
-     case 8:
-       Theater();
-       break;
-    }
-    modechange++;
-    if(modechange/10>8){
-    modechange=0;
-    }*/
+  switch (modechange) {
+    case 0:
+      ColorSelect();
+      break;
+    case 1:
+      Rainbow();
+      break;
+    case 2:
+      RainbowCycle();
+      break;
+    case 3:
+      Nightrider();
+      break;
+    case 4:
+      Counter();
+      break;
+    case 5:
+      CounterExtended();
+      break;
+    case 6:
+      Equalizer();
+      break;
+    case 7:
+      Theater();
+      break;
+    case 8:
+      WhiteColor();
+      break;
+  }
+
+if(pushSW())modechange++;
+  if (modechange >8) {
+    modechange = 0;
+  }
   delay(10);
 }
