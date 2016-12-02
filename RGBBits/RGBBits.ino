@@ -2,10 +2,8 @@
 
 // RGBLEDに出力するピン番号
 #define RGBLED_OUTPIN    1
-// Arduinoにぶら下がっているRGBLEDの個数
-#define NUMRGBLED        30
+
 int RGBlednum = 30;
-// RGBLEDのライブラリを生成する(色指定はRGBの並びで行う、LEDの速度は800KHzとする)
 Adafruit_NeoPixel RGBLED = Adafruit_NeoPixel(RGBlednum, RGBLED_OUTPIN, NEO_GRB);
 int getMaster(int max) {
   int val = analogRead(A3) / 10;
@@ -30,8 +28,8 @@ void ColorSelect() {
   int mas = getMaster(255);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
+  RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
-    RGBLED.setBrightness(sub);
     RGBLED.setPixelColor(i, mas, mas, mas) ;
   }
   RGBLED.show();
@@ -42,8 +40,8 @@ void Equalizer() {
   int mas = getMaster(RGBlednum);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
+  RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
-    RGBLED.setBrightness(sub);
     RGBLED.setPixelColor(i, 0, 150, 50) ;
     if ((RGBlednum - RGBlednum / 6) < i)RGBLED.setPixelColor(i, 150, 50, 0) ;
   }
@@ -82,8 +80,8 @@ void Rainbow() {
   int mas = getMaster(100);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
+  RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
-    RGBLED.setBrightness(sub);
     RGBLED.setPixelColor(i, colorWavePos[1] * 10, colorWavePos[2] * 10, colorWavePos[3] * 10);
   }
   RGBLED.show();
@@ -95,9 +93,9 @@ void RainbowCycle() {
   int mas = getMaster(100);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
+  RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
     ColorWave();
-    RGBLED.setBrightness(sub);
     RGBLED.setPixelColor(i, colorWavePos[1] * 10, colorWavePos[2] * 10, colorWavePos[3] * 10);
   }
   RGBLED.show();
@@ -111,7 +109,6 @@ void Nightrider() {
   int sub = getSub(255);
   if (sub < 10)sub = 50;
   for (int i = 0; i < RGBlednum; i++) {
-    RGBLED.setBrightness(0);
     RGBLED.setPixelColor(i, 0, 0, 0);
   }
   RGBLED.setBrightness(50);
@@ -129,7 +126,6 @@ void Counter() {
   if (sub < 10)sub = 50;
   if (mas > 50) {
     for (int i = 0; i < RGBlednum; i++) {
-      RGBLED.setBrightness(0);
       RGBLED.setPixelColor(i, 0, 0, 0) ;
     }
     if (ligCount > RGBlednum) {
@@ -148,10 +144,8 @@ void CounterExtended() {
   int sub = getSub(250);
   if (sub < 10)sub = 50;
   if (mas > 50) {
-
     if (ligCount > RGBlednum) {
       for (int i = 0; i < RGBlednum; i++) {
-        RGBLED.setBrightness(0);
         RGBLED.setPixelColor(i, 0, 0, 0) ;
       }
       ligCount = 0;
@@ -163,9 +157,76 @@ void CounterExtended() {
   RGBLED.show();
 }
 
+bool onoff = true;
+void Theater() {
+  //色がどんどん変わっていく
+  Serial.println("Theater");
+  int mas = getMaster(100);
+  int sub = getSub(255);
+  if (sub < 10)sub = 50;
+  RGBLED.setBrightness(50);
+  for (int i = 0; i < RGBlednum / 2; i++) {
+    if (onoff) {
+      RGBLED.setPixelColor(i, 0, 0, 0) ;
+      RGBLED.setPixelColor(i + 1, sub, sub, sub) ;
+    } else {
+      RGBLED.setPixelColor(i, sub, sub, sub) ;
+      RGBLED.setPixelColor(i + 1, 0, 0, 0) ;
+    }
+  }
+  onoff = !onoff;
+  RGBLED.show();
+  delay(10 * mas);
+}
+
+void WhiteColor() {
+  //白色点灯
+  Serial.println("WhiteColor");
+  int mas = getMaster(100);
+  int sub = getSub(RGBlednum);
+  if(sub<1)sub=RGBlednum;
+  RGBLED.setBrightness(mas);
+  for (int i = 0; i < sub; i++) {
+    RGBLED.setPixelColor(i, 255, 255, 255) ;
+  }
+  RGBLED.show();
+}
+
+int modechange = 0;
 void loop()
 {
-
-
+  switch (modechange/10) {
+    case 0:
+      ColorSelect();
+      break;
+    case 1:
+      Rainbow();
+      break;
+    case 2:
+      RainbowCycle();
+      break;
+    case 3:
+      Nightrider();
+      break;
+    case 4:
+      Counter();
+      break;
+    case 5:
+      CounterExtended();
+      break;
+    case 6:
+      Equalizer();
+      break;
+    case 7:
+      Theater();
+      break;
+    case 8:
+      Theater();
+      break;
+  }
+modechange++;
+if(modechange/10>8){
+  modechange=0;
+}
   delay(10);
 }
