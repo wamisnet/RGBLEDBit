@@ -7,16 +7,16 @@ int RGBlednum = 30;
 Adafruit_NeoPixel RGBLED = Adafruit_NeoPixel(RGBlednum, RGBLED_OUTPIN, NEO_GRB);
 int getMaster(int max) {
   int val = analogRead(A3) / 10;
-  return map(val, 0, 100, 0, max);
+  return map(val, 0, 102, 0, max);
 }
 int getSub(int max) {
   int val = analogRead(A2) / 10;
-  return map(val, 0, 100, 0, max);
+  return map(val, 0, 102, 0, max);
 }
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println("RGBbits");
+//  Serial.begin(115200);
+//  Serial.println("RGBbits");
   RGBLED.begin() ;                   // RGBLEDのライブラリを初期化する
   RGBLED.setBrightness(50) ;         // 明るさの指定(0-255)を行う
   RGBLED.setPixelColor(0, 0, 150, 0) ; // 適度に明るい緑の色。(R=0,G=150,B=0)
@@ -24,26 +24,32 @@ void setup()
 }
 void ColorSelect() {
   //色がどんどん変わっていく
-  Serial.println("ColorSelect");
-  int mas = getMaster(255);
-  int sub = getSub(100);
-  if (sub < 10)sub = 50;
+  //Serial.println("ColorSelect");
+  int mas = getMaster(1023);
+  int sub = getSub(50);
+  if (sub < 10)sub = 20;
   RGBLED.setBrightness(sub);
+  byte r=mas,g=mas>>1,b=mas>>2;
+  
   for (int i = 0; i < RGBlednum; i++) {
-    RGBLED.setPixelColor(i, mas, mas, mas) ;
+    RGBLED.setPixelColor(i, r, g, b) ;
   }
   RGBLED.show();
 }
 void Equalizer() {
-  Serial.println("Equalizer");
+//  Serial.println("Equalizer");
   //一定以上になると赤色が光る
   int mas = getMaster(RGBlednum);
-  int sub = getSub(100);
-  if (sub < 10)sub = 50;
+  int sub = getSub(50);
+  if (sub < 10)sub = 20;
   RGBLED.setBrightness(sub);
   for (int i = 0; i < RGBlednum; i++) {
+    if(i<mas){
     RGBLED.setPixelColor(i, 0, 150, 50) ;
-    if ((RGBlednum - RGBlednum / 6) < i)RGBLED.setPixelColor(i, 150, 50, 0) ;
+    if ((RGBlednum - RGBlednum / 5) <= i)RGBLED.setPixelColor(i, 150, 50, 0) ;
+    }else{
+       RGBLED.setPixelColor(i, 0, 0, 0) ;
+    }
   }
   RGBLED.show();
 }
@@ -67,15 +73,15 @@ void ColorWave() {
   if (colorWavePos[0] > 36) {
     colorWavePos[0] = 0;
   }
-  Serial.println("ColorWave");
+ // Serial.println("ColorWave");
   for (int i = 0; i < 4; i++) {
-    Serial.print(colorWavePos[i]);
-    Serial.print(":");
+ //   Serial.print(colorWavePos[i]);
+ //   Serial.print(":");
   }
 }
 void Rainbow() {
   //色がどんどん変わっていく
-  Serial.println("Rainbow");
+  //Serial.println("Rainbow");
   ColorWave();
   int mas = getMaster(100);
   int sub = getSub(100);
@@ -89,7 +95,7 @@ void Rainbow() {
 }
 void RainbowCycle() {
   //色がどんどん変わっていく
-  Serial.println("RainbowCycle");
+ // Serial.println("RainbowCycle");
   int mas = getMaster(100);
   int sub = getSub(100);
   if (sub < 10)sub = 50;
@@ -99,12 +105,12 @@ void RainbowCycle() {
     RGBLED.setPixelColor(i, colorWavePos[1] * 10, colorWavePos[2] * 10, colorWavePos[3] * 10);
   }
   RGBLED.show();
-  delay(mas);
+  delay(50+mas);
 }
 
 void Nightrider() {
   //光る場所がアナログ値によって変わる
-  Serial.println("Nightrider");
+  //Serial.println("Nightrider");
   int mas = getMaster(RGBlednum);
   int sub = getSub(255);
   if (sub < 10)sub = 50;
@@ -119,7 +125,7 @@ void Nightrider() {
 }
 int ligCount = 0;
 void Counter() {
-  Serial.println("Counter");
+  //Serial.println("Counter");
   //カウントアップしていく
   int mas = getMaster(100);
   int sub = getSub(250);
@@ -138,7 +144,7 @@ void Counter() {
   RGBLED.show();
 }
 void CounterExtended() {
-  Serial.println("CounterExtended");
+ // Serial.println("CounterExtended");
   //カウントアップしていく+消えない
   int mas = getMaster(100);
   int sub = getSub(250);
@@ -160,7 +166,7 @@ void CounterExtended() {
 bool onoff = true;
 void Theater() {
   //色がどんどん変わっていく
-  Serial.println("Theater");
+//  Serial.println("Theater");
   int mas = getMaster(100);
   int sub = getSub(255);
   if (sub < 10)sub = 50;
@@ -181,7 +187,7 @@ void Theater() {
 
 void WhiteColor() {
   //白色点灯
-  Serial.println("WhiteColor");
+//  Serial.println("WhiteColor");
   int mas = getMaster(100);
   int sub = getSub(RGBlednum);
   if(sub<1)sub=RGBlednum;
@@ -195,7 +201,8 @@ void WhiteColor() {
 int modechange = 0;
 void loop()
 {
-  switch (modechange/10) {
+   Rainbow();
+ /* switch (modechange/10) {
     case 0:
       ColorSelect();
       break;
@@ -227,6 +234,6 @@ void loop()
 modechange++;
 if(modechange/10>8){
   modechange=0;
-}
+}*/
   delay(10);
 }
